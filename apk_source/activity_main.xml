@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF8EC"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎵 Bank → 多格式"
+            android:textSize="20sp"
+            android:textColor="#E8A449"
+            android:textStyle="bold"
+            android:layout_marginBottom="2dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FMOD .bank 音频提取 · HTTP桥接"
+            android:textSize="11sp"
+            android:textColor="#8B7355"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ═══ Bridge Status ═══ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#1A000000"
+            android:paddingStart="8dp"
+            android:paddingEnd="4dp"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/bridgeStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🔴 未连接"
+                android:textSize="12sp"
+                android:textColor="#E74C3C"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/btnBridgeRefresh"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:text="🔄"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:background="#3498DB"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/btnBridgeStart"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="🚀 启动"
+                android:textSize="13sp"
+                android:textColor="#FFFFFF"
+                android:background="#E67E22"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
+        </LinearLayout>
+
+        <!-- File Pickers -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📄 输入"
+            android:textSize="12sp"
+            android:textColor="#1A2A40"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btnPickFile"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:text="选 .bank"
+                android:textSize="13sp"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btnPickFolder"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:text="选目录"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="未选择"
+            android:textSize="10sp"
+            android:textColor="#B8A088"
+            android:layout_marginBottom="6dp" />
+
+        <!-- Output -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <Button
+                android:id="@+id/btnPickOutput"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="📂 输出"
+                android:textSize="11sp"
+                android:minWidth="0dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btnResetOutput"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="默认"
+                android:textSize="10sp"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvOutputDir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Download/Bank2Mp3_output"
+            android:textSize="9sp"
+            android:textColor="#B8A088"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ═══ Terminal Buttons ═══ -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▶ 终端桥接"
+            android:textSize="12sp"
+            android:textColor="#1A2A40"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <Button
+            android:id="@+id/btnTerminalConvert"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="▶ 单文件 → WAV"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#27AE60"
+            android:enabled="false"
+            android:layout_marginBottom="4dp" />
+
+        <Button
+            android:id="@+id/btnTerminalBatch"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="📁 批量目录 → WAV"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2980B9"
+            android:enabled="false"
+            android:layout_marginBottom="4dp" />
+
+        <Button
+            android:id="@+id/btnTerminalBatchMp3"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="📁 批量目录 → MP3"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#27AE60"
+            android:enabled="false"
+            android:layout_marginBottom="4dp" />
+
+        <Button
+            android:id="@+id/btnTerminalClassify"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="📂 批量分类 → 中文目录"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#E67E22"
+            android:enabled="false"
+            android:layout_marginBottom="12dp" />
+
+        <!-- ═══ WAV 格式转换 ═══ -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⬆ WAV 转格式"
+            android:textSize="12sp"
+            android:textColor="#1A2A40"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/btnWavToMp3"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="MP3 192k"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#8E44AD"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnWavToMp3HQ"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="MP3 320k"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#9B59B6"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnWavToAac"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="AAC M4A"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#E74C3C"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/btnWavToFlac"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="FLAC"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#1ABC9C"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnWavToOgg"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="OGG"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#F39C12"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/btnWavToOpus"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:text="OPUS"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="#D35400"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Progress -->
+        <LinearLayout
+            android:id="@+id/progressContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="6dp"
+                android:layout_weight="1"
+                android:max="100" />
+
+            <TextView
+                android:id="@+id/tvProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textSize="11sp"
+                android:textColor="#E8A449"
+                android:minWidth="36dp"
+                android:gravity="end"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <!-- Log -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📋 日志"
+                android:textSize="12sp"
+                android:textColor="#1A2A40"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnCopyLog"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="📋 复制"
+                android:textSize="10sp"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="等待操作..."
+            android:textSize="10sp"
+            android:textColor="#8B7355"
+            android:fontFamily="monospace"
+            android:background="#1A000000"
+            android:padding="10dp"
+            android:minHeight="180dp"
+            android:gravity="top" />
+
+    </LinearLayout>
+</ScrollView>
