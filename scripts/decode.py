@@ -1,152 +1,121 @@
 #!/usr/bin/env python3
-"""FSB5/Bank → WAV 转换器 (fsb5 + ffmpeg)
-用法: python3 decode.py <input.bank> [output_dir]
-
-兼容两种运行模式：
-- Operit 终端: ffmpeg from PATH, fsb5 from system
-- 本地 sandbox: ffmpeg from rootfs, fsb5 from embedded modules
-"""
-import struct
+"""FSB5/Bank → WAV 转换器 (fsb5 + ffmpeg)"""
 import sys
 import os
-import subprocess
-import concurrent.futures
-from pathlib import Path
-
 import shutil
-# 查找 ffmpeg: 优先 rootfs，降级系统 PATH
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_ROOTFS_BIN = os.path.normpath(os.path.join(_SCRIPT_DIR, '..', '..', 'rootfs', 'bin'))
-_FFMPEG_CANDIDATE = os.path.join(_ROOTFS_BIN, 'ffmpeg')
-if os.path.isfile(_FFMPEG_CANDIDATE) and os.access(_FFMPEG_CANDIDATE, os.X_OK):
-    FFMPEG = _FFMPEG_CANDIDATE
-    os.environ['PATH'] = _ROOTFS_BIN + ':' + os.environ.get('PATH', '/usr/bin:/bin')
-else:
-    # 终端环境：shutil.which + 硬编码兜底
-    FFMPEG = shutil.which('ffmpeg') or '/usr/bin/ffmpeg'
+import struct
 
-try:
-    import fsb5
-except ImportError:
-    # 尝试从脚本目录加载嵌入式 fsb5
-    sys.path.insert(0, os.path.join(_SCRIPT_DIR, 'fsb5'))
+# 确保能找到 fsb5 模块
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+def find_ffmpeg():
+    """找到 ffmpeg 路径"""
+    path = shutil.which('ffmpeg')
+    if path:
+        return path
+    for p in ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/data/data/com.termux/files/usr/bin/ffmpeg']:
+        if os.path.isfile(p):
+            return p
+    raise FileNotFoundError('ffmpeg not found')
+
+def find_ffprobe():
+    path = shutil.which('ffprobe')
+    if path:
+        return path
+    for p in ['/usr/bin/ffprobe', '/usr/local/bin/ffprobe', '/data/data/com.termux/files/usr/bin/ffprobe']:
+        if os.path.isfile(p):
+            return p
+    return None
+
+def convert_bank(input_path, output_dir='.', format='wav', mp3_bitrate='192k'):
+    """
+    将 .bank 文件转换为音频格式
+    
+    Args:
+        input_path: .bank 文件路径
+        output_dir: 输出目录
+        format: wav, mp3, flac, aac, ogg, opus
+        mp3_bitrate: MP3 比特率 (192k, 320k)
+    
+    Returns:
+        list: 输出文件路径列表
+    """
+    if not os.path.isfile(input_path):
+        print(f"错误: 文件不存在 {input_path}", file=sys.stderr)
+        return []
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Step 1: fsb5 解析
+    from fsb5 import FSB5
+    base = os.path.splitext(os.path.basename(input_path))[0]
+    
+    output_files = []
     try:
-        import fsb5
-    except ImportError:
-        print("需要安装 fsb5 库: pip3 install --break-system-packages fsb5")
-        sys.exit(1)
-
-
-def parse_bank(filepath):
-    """解析 FMOD Bank (RIFF 容器)，提取内嵌 FSB5 块"""
-    with open(filepath, 'rb') as f:
-        data = f.read()
-    if data[0:4] != b'RIFF':
-        raise ValueError("Not a RIFF file")
-    
-    sndh_pos = data.find(b'SNDH')
-    if sndh_pos < 0:
-        raise ValueError("No SNDH chunk found")
-    
-    chunk_size = struct.unpack_from('<I', data, sndh_pos + 4)[0]
-    fsb_count = (chunk_size - 4) // 8
-    pair_start = sndh_pos + 12
-    
-    entries = []
-    for j in range(fsb_count):
-        off = struct.unpack_from('<I', data, pair_start + j * 8)[0]
-        sz = struct.unpack_from('<I', data, pair_start + j * 8 + 4)[0]
-        if off > 0 and sz > 0 and off + sz <= len(data):
-            entries.append(data[off:off + sz])
-    return entries
-
-
-def convert_bank(input_path, output_dir):
-    """转换 bank 文件 → WAV"""
-    input_path = Path(input_path)
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    print(f"解析: {input_path.name}")
-    
-    with open(input_path, 'rb') as f:
-        header = f.read(4)
-    
-    if header == b'RIFF':
-        fsb5_entries = parse_bank(input_path)
-    elif header == b'FSB5':
-        fsb5_entries = [open(input_path, 'rb').read()]
-    else:
-        raise ValueError(f"不支持的文件格式: {header}")
-    
-    all_samples = []
-    for ei, raw in enumerate(fsb5_entries):
-        prefix = f"{ei}_" if len(fsb5_entries) > 1 else ""
-        try:
-            fsb = fsb5.FSB5(raw)
-            for s in fsb.samples:
-                all_samples.append((fsb, s, prefix))
-        except Exception as e:
-            print(f"  FSB5[{ei}] 解析失败: {e}")
-    
-    print(f"FSB5块: {len(fsb5_entries)}, 样本数: {len(all_samples)}")
-    
-    def convert_one(args):
-        fsb, sample, prefix = args
-        try:
-            name = prefix + (sample.name or f"sample_{sample.index}")
-            
-            ogg_data = fsb.rebuild_sample(sample)
-            if not ogg_data:
-                print(f"  ✗ {name}: rebuild_sample 返回空")
-                return None
-            
-            ogg_path = output_dir / f"{name}.ogg"
-            ogg_path.write_bytes(ogg_data)
-            
-            wav_path = output_dir / f"{name}.wav"
-            result = subprocess.run([
-                FFMPEG, '-y', '-loglevel', 'error',
-                '-i', str(ogg_path),
-                '-acodec', 'pcm_s16le',
-                str(wav_path)
-            ], capture_output=True, text=True, timeout=60)
-            
-            if result.returncode == 0 and wav_path.exists():
-                ogg_path.unlink()
-                size_kb = wav_path.stat().st_size / 1024
-                dur = size_kb / (sample.frequency * sample.channels * 2) * 1024
-                print(f"  ✅ {name} → {wav_path.name} ({size_kb:.0f}KB, {dur:.1f}s)")
-                print(f"OK:{wav_path.name}")
-                return str(wav_path)
-            else:
-                err = result.stderr.strip()[-150:] if result.stderr else "unknown"
-                print(f"  ✗ {name}: ffmpeg — {err}")
-                return str(ogg_path)
+        fsb = FSB5(input_path)
+        samples = fsb.rebuild()
         
-        except Exception as e:
-            print(f"  ✗ {name}: {e}")
-            return None
+        ffmpeg = find_ffmpeg()
+        
+        for i, (sample_data, sample_rate, channels) in enumerate(samples):
+            # 写入临时 PCM
+            tmp_pcm = os.path.join(output_dir, f"_tmp_{base}_{i}.pcm")
+            with open(tmp_pcm, 'wb') as f:
+                f.write(sample_data)
+            
+            # ffmpeg 转码
+            out_ext = {'mp3': 'mp3', 'flac': 'flac', 'aac': 'm4a', 'ogg': 'ogg', 'opus': 'opus'}.get(format, 'wav')
+            if format == 'wav':
+                out_name = f"{base}_{i:03d}.wav"
+            else:
+                out_name = f"{base}_{i:03d}.{out_ext}"
+            out_path = os.path.join(output_dir, out_name)
+            
+            cmd = [
+                ffmpeg, '-y', '-f', f's{16 if struct.pack("h", 1) == b"\x01\x00" else 8}le',
+                '-ar', str(sample_rate), '-ac', str(channels),
+                '-i', tmp_pcm
+            ]
+            
+            if format == 'mp3':
+                cmd += ['-codec:a', 'libmp3lame', '-b:a', mp3_bitrate]
+            elif format == 'flac':
+                cmd += ['-codec:a', 'flac']
+            elif format == 'aac':
+                cmd += ['-codec:a', 'aac', '-b:a', '192k']
+            elif format == 'ogg':
+                cmd += ['-codec:a', 'libvorbis', '-q:a', '6']
+            elif format == 'opus':
+                cmd += ['-codec:a', 'libopus', '-b:a', '128k', '-vbr', 'on']
+            else:
+                cmd += ['-codec:a', 'pcm_s16le']
+            
+            cmd.append(out_path)
+            
+            import subprocess
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            os.remove(tmp_pcm)
+            output_files.append(out_path)
+            print(f"  ✅ {out_name}")
+            
+    except ImportError as e:
+        print(f"错误: fsb5 模块加载失败: {e}", file=sys.stderr)
+        return []
+    except Exception as e:
+        print(f"错误: 解码失败: {e}", file=sys.stderr)
+        return []
     
-    results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        futures = {pool.submit(convert_one, args): args for args in all_samples}
-        for f in concurrent.futures.as_completed(futures):
-            r = f.result()
-            if r:
-                results.append(r)
-    
-    wav_count = sum(1 for r in results if r.endswith('.wav'))
-    print(f"\n完成: {wav_count}/{len(all_samples)} WAV → {output_dir}")
-    return results
-
+    return output_files
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("用法: python3 decode.py <bank文件> [输出目录]")
+        print("用法: decode.py <bank文件> [输出目录] [格式] [mp3码率]")
         sys.exit(1)
     
     input_file = sys.argv[1]
-    output = sys.argv[2] if len(sys.argv) > 2 else os.path.join(
-        os.path.dirname(input_file) or '.', 'output')
-    convert_bank(input_file, output)
+    output = sys.argv[2] if len(sys.argv) > 2 else '.'
+    fmt = sys.argv[3] if len(sys.argv) > 3 else 'wav'
+    bitrate = sys.argv[4] if len(sys.argv) > 4 else '192k'
+    
+    files = convert_bank(input_file, output, fmt, bitrate)
+    print(f"\n✅ 完成 | {len(files)} 个文件 → {output}")
