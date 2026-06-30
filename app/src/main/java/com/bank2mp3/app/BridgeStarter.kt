@@ -2,14 +2,10 @@ package com.bank2mp3.app
 import android.content.Context
 
 object BridgeStarter {
-    fun start(context: Context): String = try {
-        if (!PythonRuntime.isReady()) PythonRuntime.init(context)
-        val cmd = PythonRuntime.buildCommand("terminal_server.py")
-        val pb = ProcessBuilder(*cmd)
-            .directory(PythonRuntime.getScriptsDir())
-            .redirectErrorStream(true)
-        pb.start()
-        Thread.sleep(2500)
-        if (TerminalBridge.checkHealth()) "启动成功 🟢" else "启动超时，请点🔄刷新"
-    } catch (e: Exception) { "启动失败: ${e.message}" }
+    fun start(context: Context): String {
+        // Android W^X 阻止从 /data 执行二进制，桥接必须在 Operit 终端启动。
+        // 用户需在 Operit 终端执行: python3 /sdcard/Download/Bank2Mp3/scripts/terminal_server.py
+        return if (TerminalBridge.checkHealth()) "已连接 🟢"
+            else "请在 Operit 终端启动: python3 /sdcard/Download/Bank2Mp3/scripts/terminal_server.py"
+    }
 }
