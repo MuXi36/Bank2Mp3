@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ═══ 光遇 · 暖色系 (保留) ═══ -->
+    <color name="sky_amber">#E8A449</color>
+    <color name="sky_amber_dark">#D4943A</color>
+    <color name="sky_amber_light">#F4C88A</color>
+    <color name="sky_gold">#F4A950</color>
+    <color name="sky_flame">#FF8C42</color>
+    <color name="sky_candle">#FFD699</color>
+
+    <!-- ═══ 光遇 · 冷色系 ═══ -->
+    <color name="sky_blue">#7EC8E3</color>
+    <color name="sky_blue_dark">#5B9FB5</color>
+    <color name="sky_navy">#1A2A40</color>
+    <color name="sky_twilight">#3A5070</color>
+    <color name="sky_night">#0F1923</color>
+
+    <!-- ═══ 光遇 · 背景 ═══ -->
+    <color name="sky_cream">#FFF8EC</color>
+    <color name="sky_cloud">#FFFAF5</color>
+    <color name="sky_cream_dark">#F0E4D0</color>
+    <color name="sky_success">#66BB6A</color>
+    <color name="sky_danger">#D32F2F</color>
+    <color name="sky_warning">#FFA726</color>
+    <color name="sky_text_primary">#FF000000</color>
+    <color name="sky_text_secondary">#8B7355</color>
+    <color name="sky_text_hint">#B8A088</color>
+
+    <!-- ═══ 光遇暗夜主题 (GSAP 动效 × Sky 风格) ═══ -->
+    <color name="dark_bg">#0F1923</color>
+    <color name="dark_surface">#182838</color>
+    <color name="dark_surface2">#213348</color>
+    <color name="dark_accent">#6C5CE7</color>
+    <color name="dark_accent2">#A29BFE</color>
+    <color name="dark_text">#E0E0E8</color>
+    <color name="dark_text2">#8B95A8</color>
+    <color name="dark_border">#22FFFFFF</color>
+    <color name="dark_gold">#E8A449</color>
+    <color name="dark_gold_glow">#F4C88A</color>
+    <color name="dark_green">#00D2A0</color>
+    <color name="dark_red">#FF6B6B</color>
+
+    <!-- ═══ 基础色 ═══ -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
