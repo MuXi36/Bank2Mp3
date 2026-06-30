@@ -1,0 +1,7 @@
+# Bank2Mp3 rootfs.dat - placeholder
+# This is a placeholder for the 24MB Linux ARM64 runtime.
+# The full file is in the local backup:
+# /storage/emulated/0/MT2/mcp/Bank转音频/app/src/main/assets/rootfs.dat
+#
+# Contains: python3.12, ffmpeg, libfmod.so, libogg, libvorbis, glibc, ld-linux
+# Copy it to app/src/main/assets/ after cloning to build.
