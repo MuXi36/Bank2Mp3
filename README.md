@@ -1,126 +1,184 @@
-# Bank2Mp3 — FMOD .bank 音频提取器
+# 🎵 Bank2Mp3 — FMOD `.bank` 音频提取器
 
-> 将 FMOD Studio 的 .bank 文件提取为 WAV / MP3 / FLAC / AAC / OGG / OPUS
+> Android 原生应用 · 终端桥接架构 · 梵高主题动效  
+> 从游戏 `.bank` 文件中提取音频，批量转码为 MP3/AAC/FLAC/OGG/OPUS
 
-Android APK，自给自足。依赖 [Operit](https://github.com/AAswordman/Operit) 终端的 proot 虚拟化环境执行 Python + ffmpeg 解码。
+[![Android](https://img.shields.io/badge/Android-8.0%2B-green?logo=android)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-blue?logo=kotlin)](https://kotlinlang.org)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-yellow?logo=python)](https://python.org)
+[![Min SDK 26](https://img.shields.io/badge/minSdk-26-orange)](https://apilevels.com)
 
-## 功能
+---
+
+## ✨ 特性
 
 | 功能 | 说明 |
 |------|------|
-| ▶ 单文件转换 | .bank → WAV |
-| 📁 批量目录 | 目录下所有 .bank → WAV / MP3 |
-| 📂 批量分类 | 按 36 类游戏音频自动分中文目录 |
-| ⬆ 格式转换 | WAV → MP3(192k/320k) / AAC M4A / FLAC / OGG / OPUS |
-| 🚀 一键启动 | 在 Operit 终端启动 Bridge Server |
+| 🔍 **.bank 解析** | 基于 FMOD API 提取音频流，输出无损 WAV |
+| 🔄 **多格式转码** | MP3 (192k/320k) · AAC · FLAC · OGG · OPUS (via FFmpeg) |
+| 📦 **批量处理** | 整个目录批量转换，支持递归扫描 |
+| 🏷️ **中文分类** | 按音频中文名自动归类到目录 |
+| 🌐 **终端桥接** | Python HTTP 服务 → APK 通过 localhost:8899 通信 |
+| 🎨 **双主题动态背景** | 暗色·梵高《星月夜》星空 / 亮色·油画布肌理 |
+| 🌟 **动态粒子效果** | 200+ 闪烁星空、12 颗呼吸光斑、漩涡弧线 |
+| 📋 **日志折叠** | 点击标题栏折叠/展开运行日志 |
+| ⏱️ **工作流守护** | Operit 工作流每分钟自动保活桥接服务 |
+| 🐔 **坤坤彩蛋** | 致敬经典 |
 
-## 快速开始
+---
 
-### 环境要求
+## 🖼️ 预览
 
-- **编译**：JDK 17 + Android SDK 34 + Gradle 8.2
-- **运行**：Android 8.0+ 设备 + [Operit](https://github.com/AAswordman/Operit) App（提供 proot 环境）
+| 暗色 · 梵高星空 | 亮色 · 油画布 |
+|:---:|:---:|
+| 深蓝渐变 + 闪烁星空 + 漩涡弧线 + 12 颗呼吸光斑 | 暖奶油底 + 亚麻编织纹理 + 暖金短笔触 + 柔光斑 |
 
-### 构建 APK
+> 背景基于 Canvas 实时绘制，非图片素材。星空粒子以正弦波独立呼吸闪烁（100ms/帧）。
+
+---
+
+## 🏗️ 架构
+
+```
+┌─────────────────────────────────────────┐
+│              Android APK                 │
+│  ┌───────────────────────────────────┐  │
+│  │     MainActivity (Kotlin)          │  │
+│  │  • UI / 动效 / 主题               │  │
+│  │  • OkHttp → localhost:8899        │  │
+│  └──────────────┬────────────────────┘  │
+│                 │ HTTP POST /exec        │
+│                 │       /batch           │
+│                 │       /wav2mp3         │
+│  ┌──────────────▼────────────────────┐  │
+│  │  terminal_server.py (Python)      │  │
+│  │  • FMOD 解析 · FFmpeg 转码       │  │
+│  │  • 批量处理 · 中文分类           │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 📲 安装
+
+### 前提条件
+
+- Android 8.0+ (API 26+)
+- [ZeroTermux](https://github.com/hanxinhao000/ZeroTermux) 或其他 proot 终端
+- Python 3.8+ + FFmpeg（终端环境中）
+
+### 构建
 
 ```bash
+# 克隆仓库
 git clone https://github.com/MuXi36/Bank2Mp3.git
 cd Bank2Mp3
 
-# 确保 Gradle wrapper 可执行
-chmod +x gradlew
+# 编译 APK（需 ZeroTermux + JDK 17）
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
+bash gradlew assembleDebug
 
-# 编译 Debug 版本
-./gradlew assembleDebug
-
-# APK 输出位置
-ls -lh app/build/outputs/apk/debug/app-debug.apk
+# APK 输出路径
+# app/build/outputs/apk/debug/app-debug.apk
 ```
 
-> **注意**：首次构建需要下载 Gradle 和依赖，约 5-10 分钟。APK 约 33MB（内含 24MB rootfs 运行时）。
+### 首次运行
 
-### 安装与使用
+1. 安装 APK
+2. 在 ZeroTermux 中启动桥接服务：
+   ```bash
+   python3 /sdcard/Download/Bank2Mp3/scripts/terminal_server.py
+   ```
+3. 或配置 Operit 工作流自动保活（每分钟检查）
 
-1. 安装编译好的 APK 到设备
-2. 打开 Operit App → 进入终端
-3. 打开 Bank2Mp3 App → 状态栏显示 🔴 → 点 🚀启动
-4. 等待状态变为 🟢终端桥接已连接
-5. 选择 .bank 文件或目录 → 点击对应转换按钮
-6. 输出在 `Download/Bank2Mp3_output/`
+---
 
-## 架构
+## 🎮 使用
 
-```
-┌──────────────────────────┐     HTTP      ┌──────────────────────────┐
-│   Bank2Mp3.apk (33MB)    │ ← localhost → │    Operit 终端 (proot)    │
-│                          │    :8899      │                          │
-│  MainActivity.kt         │ ──exec──→     │  terminal_server.py      │
-│  TerminalBridge.kt       │ ←──json──     │  decode.py (fsb5+ffmpeg) │
-│  BridgeStarter.kt        │               │  class.py (36类分类)     │
-│  PythonRuntime.kt        │               │                          │
-│  PythonDecoder.kt        │               │  rootfs:                 │
-│                          │               │  python3.12 + ffmpeg     │
-│  assets/                 │               │  + libogg + libvorbis    │
-│  ├── rootfs.dat (24MB)   │               │  + libfmod.so            │
-│  └── scripts/            │               │                          │
-│      ├── decode.py       │               │                          │
-│      └── fsb5/*.py       │               │                          │
-└──────────────────────────┘               └──────────────────────────┘
-```
+| 操作 | 路径 |
+|------|------|
+| 选择 `.bank` 文件 | 文件选择器 → 单文件转换 |
+| 选择目录 | 文档树选择器 → 批量扫描 |
+| 终端桥接 | 先启动 `terminal_server.py`，再点转换按钮 |
+| 格式转换 | WAV 区：MP3/AAC/FLAC/OGG/OPUS 一键转码 |
+| 中文分类 | 批量分类 → 自动创建中文目录 |
+| 主题切换 | 右上角 ◇/◆ 按钮切换暗色/亮色 |
+| 日志折叠 | 点击「▼ ★ 日志」标题栏折叠/展开 |
 
-解码链路：`.bank → FSB5解析 (Python) → Vorbis/PCM解码 (ctypes→libvorbis) → ffmpeg转码 → WAV/MP3/FLAC...`
+---
 
-## 项目结构
+## 🎨 动效系统
+
+| 动效 | 描述 |
+|------|------|
+| **标题呼吸** | ♫ 符号三重慢呼吸 + 菱形辉光脉动 |
+| **坤坤彩蛋** | IKUN 呼吸缩放 + alpha 微光 |
+| **卡片柔光** | 桥接栏 + 日志区 4.5s 周期柔光脉动 |
+| **按钮入场** | 22 个按钮 stagger 弹入 (OvershootInterpolator) |
+| **链式按压** | 模拟 GSAP elastic.out 多段弹跳 |
+| **跑马灯** | 终端按钮金色光晕沿按钮周期扫过 |
+| **刷新旋转** | SVG Lucide refresh-cw 图标 |
+| **星空闪烁** | 200 小星 + 12 大星光斑，独立正弦波呼吸 |
+| **漩涡弧线** | 梵高式半透明同心弧线 |
+| **亚麻纹理** | 亮色画布纵横交叉细线 |
+
+---
+
+## 📂 项目结构
 
 ```
 Bank2Mp3/
-├── build.gradle                 # 顶层 Gradle 配置
-├── settings.gradle               # 模块配置
-├── gradle.properties             # JDK/SDK 路径
-├── gradlew / gradlew.bat         # Gradle Wrapper
-├── build_and_inject.sh           # 备选：构建+注入.so+签名
-│
-├── scripts/                      # Python 脚本（终端侧运行）
-│   ├── terminal_server.py        # Bridge HTTP Server (:8899)
-│   ├── decode.py                 # FSB5 → WAV 核心解码
-│   └── fsb5/                     # fsb5 解析库
-│       ├── __init__.py           # FSB5 容器解析器
-│       ├── utils.py              # BinaryReader + 库加载
-│       ├── vorbis.py             # Vorbis ctypes 解码
-│       ├── vorbis_headers.py     # 预计算 Vorbis 表 (2.3MB)
-│       └── pcm.py                # PCM → WAV
-│
-└── app/
-    ├── build.gradle              # 应用构建配置
-    └── src/main/
-        ├── AndroidManifest.xml   # 权限：INTERNET + 存储
-        ├── res/layout/
-        │   └── activity_main.xml # 完整 UI 布局
-        ├── java/com/bank2mp3/app/
-        │   ├── MainActivity.kt   # UI + 文件选择 + 桥接调用
-        │   ├── TerminalBridge.kt # HTTP → localhost:8899
-        │   ├── BridgeStarter.kt  # 一键启动终端 server
-        │   ├── PythonRuntime.kt  # rootfs.dat 解压管理
-        │   └── PythonDecoder.kt  # 内置终端解码（备用）
-        └── assets/
-            ├── rootfs.dat        # Linux ARM64 运行时 (24MB)
-            └── Bank2Mp3/scripts/ # 脚本副本（编译进 APK）
+├── app/
+│   ├── build.gradle                    # 应用构建配置
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/bank2mp3/app/
+│       │   ├── MainActivity.kt         # 主界面 + 全部动效
+│       │   ├── BridgeClient.kt         # HTTP 桥接客户端
+│       │   └── PythonRuntime.kt        # Python 运行时管理
+│       ├── res/
+│       │   ├── layout/activity_main.xml
+│       │   ├── drawable/               # 图标、背景
+│       │   ├── values/colors.xml       # 色彩主题
+│       │   └── raw/kunkun.mp3          # 彩蛋音频
+│       └── jniLibs/                    # FMOD .so 库
+├── scripts/
+│   ├── terminal_server.py              # HTTP 桥接服务
+│   ├── batch_convert.py                # 批量转换脚本
+│   └── fmod_extract.py                 # FMOD 解析器
+├── build.gradle                        # 顶层构建配置
+├── settings.gradle
+└── gradle.properties
 ```
 
-## 依赖
+---
 
-| 依赖 | 用途 |
+## 🙏 感谢
+
+衷心感谢以下项目和技术：
+
+| 项目 | 用途 |
 |------|------|
-| [Operit](https://github.com/AAswordman/Operit) | proot 终端环境 |
-| [fsb5](https://github.com/HearthSim/python-fsb5) | FSB5 容器解析（内置） |
-| Python 3.12 + ffmpeg | 音频解码与转码（rootfs 内置） |
-| libogg + libvorbis | Vorbis 编解码（rootfs 内置） |
+| [FMOD](https://www.fmod.com/) | .bank 音频引擎核心 |
+| [FFmpeg](https://ffmpeg.org/) | 多格式音频转码 |
+| [ZeroTermux](https://github.com/hanxinhao000/ZeroTermux) | Android proot 终端环境 |
+| [Operit AI](https://github.com/Vael-Li/Operit) | AI 助手平台 + 工作流调度 |
+| [Android Jetpack](https://developer.android.com/jetpack) | ViewBinding · Coroutines · Lifecycle |
+| [Kotlin](https://kotlinlang.org/) | 现代 Android 开发语言 |
+| [Lucide Icons](https://lucide.dev/) | refresh-cw SVG 图标 |
+| [Shadcn/ui](https://ui.shadcn.com/) | 设计语言参考 |
 
-## 鸣谢
+特别感谢所有在深夜调试 Shizuku 权限、proot 路径映射和 Android 14 安装弹窗时提供帮助的开发者朋友们。
 
-- [Fmod-Bank-Tools](https://github.com/Wouldubeinta/Fmod-Bank-Tools) — FMOD bank 分析工具
-- [AAswordman/Operit](https://github.com/AAswordman/Operit) — Android proot 终端环境
+---
 
-## License
+## 📄 许可证
 
-MIT
+MIT License · Copyright © 2025 Vael Li
+
+---
+
+<p align="center">
+  <sub>Made with ❤️ by Vael · Powered by 凌晨 3 点的咖啡 ☕</sub>
+</p>
